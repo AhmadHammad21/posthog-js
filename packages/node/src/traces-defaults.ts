@@ -21,9 +21,15 @@ function positiveInteger(value: number | undefined, fallback: number): number {
  *
  * OTLP resource attributes take precedence over the named fields, matching how
  * the logs config resolves — a user who sets `service.name` directly means it.
+ *
+ * `hostResourceAttributes` are the runtime-detected attributes the entrypoint
+ * contributes; they merge first so a user-supplied value of the same key wins.
  */
-export function resolveTracesConfig(config: TracesConfig | undefined): ResolvedTracesConfig {
-  const resourceAttributes = config?.resourceAttributes
+export function resolveTracesConfig(
+  config: TracesConfig | undefined,
+  hostResourceAttributes?: Record<string, string>
+): ResolvedTracesConfig {
+  const resourceAttributes = { ...hostResourceAttributes, ...config?.resourceAttributes }
   const maxExportBatchSize = positiveInteger(config?.maxExportBatchSize, DEFAULT_MAX_EXPORT_BATCH_SIZE)
   return {
     serviceName: (resourceAttributes?.['service.name'] as string | undefined) ?? config?.serviceName,
